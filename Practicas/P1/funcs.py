@@ -1,14 +1,24 @@
-from random import randint
+import random
 
 
-def potencias(a, b, m):
-    if m == 0:
-        return -1
-    aux = a
-    for i in range(b - 1):
-        aux = (aux * a) % m
+# random.seed(9)
 
-    return aux
+
+# def potencias(a, b, m):
+#     if m == 0:
+#         return -1
+#     aux = a
+#     for i in range(b - 1):
+#         aux = (aux * a) % m
+#
+#     return aux
+
+# def func3(n):
+#     res = []
+#     for i in range(n):
+#         if potencia_modular(i, 2, n) == 1:
+#             res.append(i)
+#     return res
 
 
 def potencia_modular(x, y, z):
@@ -22,14 +32,6 @@ def potencia_modular(x, y, z):
     return aux
 
 
-def func3(n):
-    res = []
-    for i in range(n):
-        if potencia_modular(i, 2, n) == 1:
-            res.append(i)
-    return res
-
-
 def descomponer(a):
     cont = 0
     b = a
@@ -38,15 +40,18 @@ def descomponer(a):
         b = b // 2
     return cont, b
 
-#Falsos testigos de 561:
-def miller_rabin(p, pr=False):
+
+def miller_rabin(p, ft=None, pr=False):
     if p >= 5 and p % 2 == 1:
         u, s = descomponer(p - 1)
-        a = randint(2, p - 2)
+
+        testigo_actual = random.randint(2, p - 2) if ft is None else ft
 
         if pr:
-            print("Estamos usando como testigo: a = ", a)
-        res = potencia_modular(a, s, p)
+            print("Estamos usando como testigo: a = ", testigo_actual)
+
+        res = potencia_modular(testigo_actual, s, p)
+
         if pr:
             print("{} ^ {} = {} mod {}".format(res, s, res, p))
 
@@ -65,8 +70,7 @@ def miller_rabin(p, pr=False):
     return False
 
 
-def falso_testigo(p, pr=False):
-
+def buscar_todos_falsos_testigos(p, pr=False):
     falsos_testigos = []
 
     if p >= 5 and p % 2 == 1:
@@ -87,50 +91,89 @@ def falso_testigo(p, pr=False):
                     res = potencia_modular(res, 2, p)
                     if pr:
                         print("{} ^ {} = {} mod {}".format(res, s * (2 ** i), res, p))
+
                     if res == p - 1:
                         falsos_testigos.append(a)
                     elif res == 1:
                         break
 
-
     return falsos_testigos
 
 
-def primo(p, n=10, pr=False):
+def es_primo(p, testigo=None, n=10, pr=False):
     for i in range(n):
-        if not miller_rabin(p, pr=True):
+
+        if not miller_rabin(p=p, ft=testigo, pr=pr):
+
             if pr:
                 print(p, " no es primo\n")
+
             return False
     if pr:
         print(p, " es posible primo\n")
+
     return True
 
 
 def siguiente_primo(p):
     aux = p + 1 if p % 2 == 0 else p + 2
 
-    while not miller_rabin(aux):
+    while not miller_rabin(p=aux, ft=None, pr=False):
         aux += 2
     return aux
 
 
-def primo_n_bits(n):
-    sem = randint(2 ** n - 1, 2 ** n)
-    return siguiente_primo(sem)
+def primo_fuerte_n_bits(n):
+    sem = random.randint(2 ** (n - 1), 2 ** n)
+
+    primo = primo_fuerte(sem)
+    cont = 0
+    while primo > 2 ** n:
+        print("{} es mayor que 2^{} con la semilla {}".format(primo, n, sem))
+
+        sem = random.randint(2 ** (n - 1), 2 ** n)
+        primo = primo_fuerte(sem)
+
+        cont += 1
+        if cont == 10:
+            break
+
+    return primo
 
 
+# n > 4 bits
 def primo_fuerte(n):
-    pr = siguiente_primo(n)
-    while not primo((pr - 1) // 2):
-        pr = siguiente_primo(pr)
-    return pr
+    prmo = siguiente_primo(n)
+    while not es_primo((prmo - 1) // 2):
+        prmo = siguiente_primo(prmo)
+
+    return prmo
 
 
 if __name__ == '__main__':
-    # print (primo_n_bits(2))
-    # print (siguiente_primo(5))
-    # print(primo_fuerte(23))
-    falsos_testigos_561=[50, 101, 103, 256, 305, 458, 460, 511]
-    primo(561, pr=True)
-    print(falso_testigo(561, False))
+
+    prueba = 561
+    # Apartado 1
+    es_primo(p=prueba, testigo=None, n=10, pr=True)
+
+    # Apartado 2
+    testigo_prueba = 101
+    es_primo(p=prueba, testigo=testigo_prueba, n=1, pr=True)
+    print("Los falsos testigos de {} son: \n{}\n".format(prueba, buscar_todos_falsos_testigos(prueba, pr=False)))
+
+    # Apartado 3
+    print("El siguiente primo a {} es: {}".format(prueba, siguiente_primo(prueba)))
+
+    # Apartado 4
+    print("El siguiente primo fuerte a {} es: {}".format(prueba, primo_fuerte(prueba)))
+
+    # Apartado 5
+    n_bits = 8
+    print("Un primo fuerte de {} bits es: {}".format(n_bits, primo_fuerte_n_bits(n_bits)))
+
+    # Apartado 6
+    lista_pruebas = [6601, 8911, 10585, 15841, 29341]
+    for pruebas in lista_pruebas:
+        print("Los falsos testigos de {} son: \n{}\n".format(pruebas, buscar_todos_falsos_testigos(pruebas, pr=False)))
+
+    # Apartado 7
