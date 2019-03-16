@@ -13,12 +13,12 @@ def potencia_modular(x, y, z):
 
 
 def descomponer(a):
-    cont = 0
+    c = 0
     b = a
     while b % 2 == 0:
-        cont = cont + 1
+        c = c + 1
         b = b // 2
-    return cont, b
+    return c, b
 
 
 def miller_rabin(p, ft=None, pr=False):
@@ -50,13 +50,14 @@ def miller_rabin(p, ft=None, pr=False):
     return False
 
 
-def buscar_n_falsos_testigos(p, n, pr=False):
+def buscar_n_falsos_testigos(p, n=None, pr=False):
     falsos_testigos = []
 
     if p >= 5 and p % 2 == 1:
         u, s = descomponer(p - 1)
-        for _ in range(n):
-            a = random.randint(2, p - 2)
+        rango = range(2, p - 2) if n is None else range(n)
+        for aux in rango:
+            a = random.randint(2, p - 2) if n is not None else aux
             res = potencia_modular(a, s, p)
 
             if res == 1 or res == p - 1:
@@ -80,34 +81,34 @@ def buscar_n_falsos_testigos(p, n, pr=False):
     return falsos_testigos
 
 
-def buscar_falsos_testigos(p, pr=False):
-    falsos_testigos = []
+# def buscar_falsos_testigos(p, pr=False):
+#     falsos_testigos = []
 
-    if p >= 5 and p % 2 == 1:
-        u, s = descomponer(p - 1)
-        for a in range(2, p - 2):
+#     if p >= 5 and p % 2 == 1:
+#         u, s = descomponer(p - 1)
+#         for a in range(2, p - 2):
 
-            res = potencia_modular(a, s, p)
+#             res = potencia_modular(a, s, p)
 
-            if res == 1 or res == p - 1:
-                falsos_testigos.append(a)
+#             if res == 1 or res == p - 1:
+#                 falsos_testigos.append(a)
 
-            else:
+#             else:
 
-                if pr:
-                    print("{} ^ {} = {} mod {}".format(res, s, res, p))
+#                 if pr:
+#                     print("{} ^ {} = {} mod {}".format(res, s, res, p))
 
-                for i in range(1, u):
-                    res = potencia_modular(res, 2, p)
-                    if pr:
-                        print("{} ^ {} = {} mod {}".format(res, s * (2 ** i), res, p))
+#                 for i in range(1, u):
+#                     res = potencia_modular(res, 2, p)
+#                     if pr:
+#                         print("{} ^ {} = {} mod {}".format(res, s * (2 ** i), res, p))
 
-                    if res == p - 1:
-                        falsos_testigos.append(a)
-                    elif res == 1:
-                        break
+#                     if res == p - 1:
+#                         falsos_testigos.append(a)
+#                     elif res == 1:
+#                         break
 
-    return falsos_testigos
+#     return falsos_testigos
 
 
 def es_primo(p, testigo=None, n=10, pr=False):
@@ -135,6 +136,14 @@ def siguiente_primo(p):
     while not miller_rabin(p=aux, ft=None, pr=False):
         aux += 2
     return aux
+
+
+def primo_fuerte(n):
+    prmo = siguiente_primo(n)
+    while not es_primo((prmo - 1) // 2):
+        prmo = siguiente_primo(prmo)
+
+    return prmo
 
 
 def primo_fuerte_n_bits(n):
@@ -173,15 +182,6 @@ def primo_n_bits(n):
     return primo
 
 
-# n > 4 bits
-def primo_fuerte(n):
-    prmo = siguiente_primo(n)
-    while not es_primo((prmo - 1) // 2):
-        prmo = siguiente_primo(prmo)
-
-    return prmo
-
-
 if __name__ == '__main__':
 
     prueba_primos = [13, 561, 6299, 921]
@@ -190,7 +190,8 @@ if __name__ == '__main__':
         es_primo(p=prueba, testigo=None, n=10, pr=True)
         # Apartado 2
         es_primo(p=prueba, testigo=random.randint(2, prueba - 1), n=1, pr=True)
-        print("Los falsos testigos de {} son: \n{}\n".format(prueba, buscar_falsos_testigos(prueba, pr=False)))
+        print(
+            "Los falsos testigos de {} son: \n{}\n".format(prueba, buscar_n_falsos_testigos(prueba, n=None, pr=False)))
 
         # Apartado 3
         print("El siguiente primo a {} es: {}".format(prueba, siguiente_primo(prueba)))
@@ -205,7 +206,8 @@ if __name__ == '__main__':
     # Apartado 6
     lista_pruebas = [6601, 8911, 10585, 15841, 29341]
     for pruebas in lista_pruebas:
-        print("Los falsos testigos de {} son: \n{}\n".format(pruebas, buscar_falsos_testigos(pruebas, pr=False)))
+        print("Los falsos testigos de {} son: \n{}\n".format(pruebas,
+                                                             buscar_n_falsos_testigos(pruebas, n=None, pr=False)))
 
     # Apartado 7
 
@@ -223,13 +225,11 @@ if __name__ == '__main__':
     print("El numero compuesto por dos primos grandes {} * {} es: {}".format(primo2, primo3, compuesto_primos_grandes))
 
     lista = [compuesto_varios_primos, compuesto_primos_grandes]
-    n = 200
+    n_veces = 200
     for j in lista:
-
-        print("Los {} falsos positivos de {} son: \n{}\n".format(n, j, buscar_n_falsos_testigos(j, n, pr=False)))
+        print("Los {} falsos positivos de {} son: \n{}\n".format(n_veces, j, buscar_n_falsos_testigos(j, n_veces, pr=False)))
     # Apartado 8
 
     lista = [3215031751, 2199733160881]
     for j in lista:
-
-        print("Los {} falsos positivos de {} son: \n{}\n".format(n, j, buscar_n_falsos_testigos(j, n, pr=False)))
+        print("Los {} falsos positivos de {} son: \n{}\n".format(n_veces, j, buscar_n_falsos_testigos(j, n_veces, pr=False)))
