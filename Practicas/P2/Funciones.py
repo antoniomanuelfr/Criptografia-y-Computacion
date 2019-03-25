@@ -7,16 +7,10 @@ funcionalidad extra en el futuro:
             ----------------
     - numpy.zeros
     - numpy.sum
-
-TODO podemos mejorar la eficiencia de las funciones si tomamos expresiones regulares para
-     analizar el texto.
-TODO realizar metodos para determinar las posibilidades de que se de una determinada permutacion
-     en espaniol para ello tomar la tabla de sus permutaciones y la tabla objetivo y ver como es 
-     de posible que se den esos valores.
-TODO Metodo que realice permutaciones aleatorias en funcion de los valores de los valores recogidos
-     en las tablas defrecuencia
+    - scipy.stats.mode
 """
 import numpy as np
+from scipy import stats
 
 def cadenatolista(cadena):
     """
@@ -345,6 +339,23 @@ def cifra_transposicion(texto,n):
     
     return texto_cif
 
+def frecuencia_transposicion(file, n):
+    frec = np.zeros((n,27), dtype=np.uint)
+
+    for char, ind in zip( file, range(len(file)) ):
+        charint = ord(char)
+
+        if charint < 79:
+            charint = (charint - 65) % 27
+        elif charint == 209:
+            charint = 14 
+        elif charint >= 79:
+            charint = (charint - 64 ) % 27
+
+        frec[ind % n, charint] += 1
+    
+    return frec
+
 
 def siguiente(m,n,x):
     """
@@ -380,7 +391,8 @@ def siguiente(m,n,x):
     else:
         return -1
 
-            
+
+def vignere_key_length(text, n=2):
     """
     Parameter
     ------------
@@ -393,8 +405,6 @@ def siguiente(m,n,x):
 
     n : Longitud de la clave
     """
-
-def vignere_key_length(text, n=2):
 
     if n > 23: 
         return -1
@@ -452,6 +462,20 @@ def ocurrencias(cadena,texto,n):
 
 class TextBase:
 
+    """
+    Clase base para el procesado de textos, en la cual se toma como parametro
+    un path a un texto el cual se lee y se extraen atributos basicos
+
+    Atributes
+    --------------
+
+    file : Texto leido
+    frec : numpy array con las frecuencias de cada letra en el texto
+    indes_c : numpy array con el indice de coincidencia de cada letra
+    stats : Estadisticas basicas del texto, numero de letras, indice coincidencia total, valor medio de aparicion de cada letra
+            valor maximo de aparicion, valor minimo, desviacion tipica de aparicion
+    """
+
     def __init__(self, path):
         self.file = open(path, "r").read()
         self.frec = frecuencias(self.file)
@@ -469,6 +493,21 @@ class TextBase:
                     self.stats.get('max'),      self.stats.get('min'),   self.stats.get('des') ))
 
 class SustitutionText (TextBase):
+
+    """
+    Clase que hereda de TextBase la cual esta pensada para textos cifrados con sustitucion
+    mono alfabética, en este texto se dan las utilidades basicas para resolver sustituciones
+    de este tipo.
+
+    Atributes
+    -------------------
+    
+    [static] alfabOrd : Array de caracteres en orden alfabetico
+    [static] basicOrd : Array de caracteres en orden de mayor frecuencia en español
+
+    order : Array con las posiciones de las letras segun su frecuencia
+    perm  : permutacion basica a aplicar para decodificar
+    """
 
     alfabOrd = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ'
                 , 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
@@ -499,6 +538,60 @@ class SustitutionText (TextBase):
         
         print()
         print(descifra_sustitucion(self.file,self.perm)[:200] )
+    
+    def decodeCesar(self,valor):
+
+        frec_max = self.order
+        permutation = dict().fromkeys(self.alfabOrd)
+
+        for id in frec_max:
+            letter = ord(self.alfabOrd[id])
+
+            if letter < 79:
+                letter = (letter - 65 - valor) % 27
+            elif letter == 209:
+                letter = (14 - valor) % 27
+            elif letter >= 79:
+                letter = (letter - 64 - valor) % 27
+            
+            if letter < 14:
+                letter += 65
+            elif letter == 14:
+                letter = 209
+            elif letter > 14:
+                letter += 64
+
+            permutation[self.alfabOrd[id]] = chr(letter)
+        
+        
+        return descifra_sustitucion(self.file, permutation)
+    
+    def solveCesar(self, orderfrecuencias = None):
+
+        if orderfrecuencias is None:
+            frec_max = self.order
+        else:
+            frec_max = orderfrecuencias
+            
+        distances = []
+
+        for ind, elem in zip(frec_max, self.basicOrd):
+            letter = ord( self.alfabOrd[ind] )
+            charele = ord(elem)
+
+            if letter == 209:
+                letter = 79
+            elif letter >= 79:
+                letter += 1
+            
+            if charele == 209:
+                charele = 79
+            elif charele >= 79:
+                charele += 1
+
+            distances.append( (letter - charele) % 27  )
+
+        return stats.mode(np.array(distances))
 
           
   
