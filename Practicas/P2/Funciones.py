@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Numpy usado para la generacion de arrays de forma automatica
 y mejorando la eficiencia de su utilizacion ademas de aportar 
@@ -26,7 +27,6 @@ def cadenatolista(cadena):
 
     Brief
     --------------
-
     Funcion para transformar las cadenas de texto en arrays numéricos
     señalando el número al que pertenecen, toma cuidado de las ñ para que
     sean la letra 14.
