@@ -380,6 +380,33 @@ def siguiente(m,n,x):
     else:
         return -1
 
+            
+    """
+    Parameter
+    ------------
+
+    text : Texto cifrado al que se le va a buscar la longitud de la clave con la que se ha cifrado
+    n : Partes en las que se va a dividir el texto
+
+    Result
+    ------------
+
+    n : Longitud de la clave
+    """
+
+def vignere_key_length(text, n=2):
+
+    if n > 23: 
+        return -1
+    
+    ic_mean = 0
+    for i in divide_cadena(text, n):
+        ic_mean += sum(indice_coincidencia(i))
+    ic_mean /= n
+    if ic_mean > 0.07:
+        return n
+    else: 
+        return vignere_key_length(text,n+1)
 
 def ocurrencias(cadena,texto,n):
     """
