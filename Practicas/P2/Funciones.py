@@ -301,8 +301,7 @@ def apariciones(cadena,texto):
             posicion.append(i)
     
     return (posicion,len(posicion))
-     
-
+      
 
 def cifra_transposicion(texto,n):
     """
@@ -391,6 +390,17 @@ def siguiente(m,n,x):
     else:
         return -1
 
+def descifra_transposicion(texto,n):
+    longitud_string = len(texto) // n
+    texto_res = ''
+    
+    pos = siguiente(len(texto),n,0)
+
+    for _ in range(len(texto)):
+        texto_res += texto[siguiente(len(texto),n,pos)]
+        pos = siguiente(len(texto),n,pos)
+    
+    return texto_res
 
 def vignere_key_length(text, n=2):
     """
@@ -518,7 +528,7 @@ class SustitutionText (TextBase):
     def __init__(self, path):
         super( ).__init__(path)
         self.order = np.argsort( self.frec )[::-1]
-        self.perm = {letter: self.alfabOrd[changed] for letter,changed in zip( self.basicOrd, self.order ) }
+        self.perm = {self.alfabOrd[changed] : letter for letter,changed in zip( self.basicOrd, self.order ) }
 
     def generatePermutaion(self):
         aux = np.array([ x + (np.random.random_sample() - 0.5) * self.stats.get('des') for x in self.frec])
