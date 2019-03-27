@@ -576,6 +576,10 @@ class SustitutionText (TextBase):
         
         return descifra_sustitucion(self.file, permutation)
     
+    def printPerm (self):
+        for elem in self.order:
+            print("{}->{} ({})".format(self.alfabOrd[elem], self.perm[self.alfabOrd[elem]], self.frec[elem] / self.stats['longitud']))
+
     def solveCesar(self, orderfrecuencias = None):
 
         if orderfrecuencias is None:
@@ -603,5 +607,10 @@ class SustitutionText (TextBase):
 
         return stats.mode(np.array(distances))
 
-          
+    def applyPerm (self, array):
+        res = []
+        for elem in array:
+            res.append(descifra_sustitucion(elem,self.perm))
+        
+        return res
   
