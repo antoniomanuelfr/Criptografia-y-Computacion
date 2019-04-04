@@ -391,7 +391,6 @@ def siguiente(m,n,x):
         return -1
 
 def descifra_transposicion(texto,n):
-    longitud_string = len(texto) // n
     texto_res = ''
     
     pos = siguiente(len(texto),n,0)
@@ -415,9 +414,6 @@ def vignere_key_length(text, n=2):
 
     n : Longitud de la clave
     """
-
-    if n > 23: 
-        return -1
     
     ic_mean = 0
     for i in divide_cadena(text, n):
@@ -469,6 +465,34 @@ def ocurrencias(cadena,texto,n):
             ocur +=1
     
     return ocur
+
+def letterToNum (char):
+    x = ord(char)
+    
+    if x == 32:
+        x = 0xff
+    elif x < 79:
+        x = x-65
+    elif x == 209:
+        x = 14
+    else:
+        x = x-64
+    
+    return x
+
+def numToLetter (value):
+
+    let = ''
+    if value == 32:
+        let = '#'
+    elif value < 14:
+        let = chr(value+65)
+    elif value == 14:
+        let = chr(209)
+    else:
+        let = chr(value+64)
+    
+    return let
 
 class TextBase:
 
@@ -531,6 +555,13 @@ class SustitutionText (TextBase):
         self.perm = {self.alfabOrd[changed] : letter for letter,changed in zip( self.basicOrd, self.order ) }
 
     def generatePermutaion(self):
+        """
+        Brief
+        ------------------------
+
+        Metodo para la generacion de permutaciones aleatorias basandose en la permutacion 
+        basica de inicio, metodo hacedor
+        """
         aux = np.array([ x + (np.random.random_sample() - 0.5) * self.stats.get('des') for x in self.frec])
         self.order = np.argsort( - aux )
 
@@ -539,6 +570,12 @@ class SustitutionText (TextBase):
 
     
     def aparicionesCadenas(self):
+        """
+        Brief
+        -----------------------------
+
+        Cuenta las apariciones de las cadenas basicas prpuestas y comprueba en el texto base
+        """
         preposiciones = ['QUE','UNA','CON','LOS','LAS','PARA','COMO','PERO','SOBRE','ESTE','PORQUE','TAMBIEN']
 
         prob_es = 0.0
@@ -550,37 +587,63 @@ class SustitutionText (TextBase):
         print(descifra_sustitucion(self.file,self.perm)[:200] )
     
     def decodeCesar(self,valor):
+        """
+        Brief
+        ---------------------
+
+        Funcion para decodificar el texto cifrado como cesar, toma las letras 
+        y les aplica un movimiento, y la permutacion la guarda en su valor base
+
+        Parameter
+        ----------------------
+
+        valor : Entero, valor de desplazamiento de las letras
+
+        Return
+        --------------------------------
+
+        Texto descifrado aplicado el desplazamiento
+
+        """
 
         frec_max = self.order
-        permutation = dict().fromkeys(self.alfabOrd)
+        self.perm = dict().fromkeys(self.alfabOrd)
 
         for id in frec_max:
-            letter = ord(self.alfabOrd[id])
-
-            if letter < 79:
-                letter = (letter - 65 - valor) % 27
-            elif letter == 209:
-                letter = (14 - valor) % 27
-            elif letter >= 79:
-                letter = (letter - 64 - valor) % 27
-            
-            if letter < 14:
-                letter += 65
-            elif letter == 14:
-                letter = 209
-            elif letter > 14:
-                letter += 64
-
-            permutation[self.alfabOrd[id]] = chr(letter)
+            self.perm[self.alfabOrd[id]] = numToLetter((letterToNum(self.alfabOrd[id]) - valor) % 27)
         
         
-        return descifra_sustitucion(self.file, permutation)
+        return descifra_sustitucion(self.file, self.perm)
     
     def printPerm (self):
+        """
+        Brief
+        --------------------
+
+        Funcion para pintar el la permutacion del objeto
+        """
         for elem in self.order:
             print("{}->{} ({})".format(self.alfabOrd[elem], self.perm[self.alfabOrd[elem]], self.frec[elem] / self.stats['longitud']))
 
     def solveCesar(self, orderfrecuencias = None):
+        """
+        Brief
+        -------------------
+
+        En esta funcion se calcula las distancias con la letras que le corresponden y 
+        la moda del de dicho vector para saber cual es la distancia mas comun de los valores
+
+        Parameter
+        -------------------
+
+        orderfrecuencias : Opcional, array de frecuencias
+
+        Result
+        -------------------
+
+        stats.mode del vector
+
+        """
 
         if orderfrecuencias is None:
             frec_max = self.order
@@ -608,9 +671,39 @@ class SustitutionText (TextBase):
         return stats.mode(np.array(distances))
 
     def applyPerm (self, array):
+        """
+        Brief
+        -------------
+
+        Aplica la Permitacion a un vector de palabras
+
+        Return
+        --------------
+
+        array con los resultados descifrados segun la permutacion 
+        base
+        """
         res = []
         for elem in array:
             res.append(descifra_sustitucion(elem,self.perm))
         
         return res
   
+    def descifraVigenere(self, cadena):
+        res = ''
+        lengCad = len(cadena)
+        for ind, elem in zip( range(self.stats['longitud']), self.file):
+            valueFile = letterToNum(elem)
+            valueCad = letterToNum(cadena[ind % lengCad])
+
+            res += numToLetter( (valueFile - valueCad) % 27 )
+
+        return res
+    
+    def frecuenciasVigenere(self, n):
+        matr = np.zeros((n,27), dtype=np.uint)
+
+        for i,letr in zip(range(len(self.file)), self.file ):
+            matr[i%n,letterToNum(letr)] += 1
+
+        return matr            
