@@ -152,7 +152,7 @@ def log_ro_pollard(a, b, p):
     ------------
 
     pos : log_a (b) mod p 
-"""
+    """
     cnt = 0
     end = False
     # Primera secuencia
