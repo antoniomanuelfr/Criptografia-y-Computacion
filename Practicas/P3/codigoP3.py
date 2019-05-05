@@ -8,6 +8,7 @@ Algortimos para la resolución del problema del logaritmo discreto
 
 
 def log_bf(a,b,p):
+    
     """
     brief
     -------------
@@ -134,7 +135,6 @@ def pseudo(a,b,p,sec):
 
     return [x_next,alpha_next, beta_next]
 
-
 def log_ro_pollard(a, b, p):
     """
     brief
@@ -153,42 +153,23 @@ def log_ro_pollard(a, b, p):
 
     pos : log_a (b) mod p 
     """
-    cnt = 0
-    end = False
-    # Primera secuencia
-    sec_ant = pseudo(a,b,p,[1,0,0])
-    # Lista de la secuencia
-    sec = [sec_ant]
-    # Lista de x_n para buscar 
-    x_n = [sec_ant[0]]
+    # Calculamos x_n
+    sec_1 =  pseudo(a,b,p,[1,0,0])
+    # Calculamos x_{2n}
+    sec_2 =  pseudo(a,b,p,sec_1)
 
-    while not end:
-        # Genero el paso siguiente de la secuencia
-        nueva = pseudo(a,b,p,sec_ant)
-        # Incremento en el contador para solo comparar x_n y x_{2n}
-        cnt +=1
-        if cnt == 2:
-            cnt = 0 
-            # Comparo si el nuevo x_i esta en la lista de x_anteriores
-            if  nueva[0] in x_n: 
-                # Si esta devuelvo el el elemento de la secuencia correspondiente
-                b_1 = sec[x_n.index(nueva[0])]
-                b_2 = nueva
-                end = True
-        # Añado x_i a la lista de x anteriores        
-        x_n.append(nueva[0])
-        # Añado el nuevo elemento de la secuencia
-        sec.append(nueva)
-        # actualizo x_i con x_{i+1}
-        sec_ant = nueva.copy()
-    
+    while (sec_1[0]!=sec_2[0]):
+        # Siguientes pasos de la secuencia
+        sec_2 = pseudo(a,b,p,pseudo(a,b,p,sec_2))
+        sec_1 = pseudo(a,b,p,sec_1)
+
     # Resolvemos la congruencia 
-    return mt.congruencia(b_2[2]-b_1[2],b_1[1]-b_2[1],p-1)[1]
+    return mt.congruencia(sec_2[2]-sec_1[2],sec_1[1]-sec_2[1],p-1)
 
 if __name__ == '__main__':
-    a = 11
-    b = 766
-    p = 839
+    a = 5
+    b = 24
+    p = 47
     print ("El log en base {} de {} mod {} usando fuerza bruta es: {}".format(a,b,p,log_bf(a,b,p)))
     print ("El log en base {} de {} mod {} usando el algoritmo paso pequeño-paso gigante es: {}".format(a,b,p,log_pe_pg(a,b,p)))
     print ("El log en base {} de {} mod {} usando el algoritmo rho de Pollard es: {}".format(a,b,p,log_ro_pollard(a,b,p)))
