@@ -330,7 +330,7 @@ def cifra_transposicion(texto,n):
     
     for i in range(n):
         if i < k:
-            aux = m // (n + 1)
+            aux = (m // n) + 1
         else: 
             aux = m//n
         for j in range(aux):
