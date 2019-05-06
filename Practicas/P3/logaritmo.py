@@ -61,30 +61,23 @@ def log_pe_pg(a, b, p):
     pos : log_a (b) mod p 
     """
     s = mt.square(p) + 1
-    end_value = (a**(s**2))
+    actual = b
+    tabla1 = [actual]
 
-    tabla1 = [b]
     for i in range (1,s):
-        exp = mt.power_optimize(a,i,p)
-        tabla1.append((b*exp)%p)
+        actual = (actual * a )%p
+        tabla1.append(actual)
 
-    end = False
     f1 = (a**s)%p
     t = 1 
     f = f1
-
-    while not end:
+    while t*s < s**2:
         if f in tabla1: 
-            end = True
-            res_val =  ((t*s) - tabla1.index(f)) % p 
-        elif t == end_value:
-            res_val = None
-            end = True
-       
+            return ((t*s) - tabla1.index(f)) % p        
         f = (f*f1)%p
         t+=1
 
-    return res_val
+    return None
 def pseudo(a,b,p,sec):
     """
     brief
@@ -167,9 +160,36 @@ def log_ro_pollard(a, b, p):
     return mt.congruencia(sec_2[2]-sec_1[2],sec_1[1]-sec_2[1],p-1)
 
 if __name__ == '__main__':
-    a = 5
-    b = 24
-    p = 47
-    print ("El log en base {} de {} mod {} usando fuerza bruta es: {}".format(a,b,p,log_bf(a,b,p)))
-    print ("El log en base {} de {} mod {} usando el algoritmo paso pequeño-paso gigante es: {}".format(a,b,p,log_pe_pg(a,b,p)))
-    print ("El log en base {} de {} mod {} usando el algoritmo rho de Pollard es: {}".format(a,b,p,log_ro_pollard(a,b,p)))
+    # a = 5
+    # b = 24
+    # p = 47
+    # print ("El log en base {} de {} mod {} usando fuerza bruta es: {}".format(a,b,p,log_bf(a,b,p)))
+    # print ("El log en base {} de {} mod {} usando el algoritmo paso pequeño-paso gigante es: {}".format(a,b,p,log_pe_pg(a,b,p)))
+    # print ("El log en base {} de {} mod {} usando el algoritmo rho de Pollard es: {}".format(a,b,p,log_ro_pollard(a,b,p)))
+    import matplotlib.pyplot as plt
+    import random
+    from time import time
+    n_iters = 17
+    primos_pe = []
+    tiempos_pe = []
+    bits = 5
+    paso = 2
+    p_n = pr.next_prime(2**bits)
+
+    for i in range (n_iters):
+        time_1 = time()
+        print (i)
+        b = random.randint(2,p_n-2)
+    
+        res = log_pe_pg((p_n-1)//2,b,p_n)
+        time_2 = time()        
+        primos_pe.append(p_n)
+        tiempos_pe.append(time_2-time_1)
+
+        bits+=paso
+        p_n = pr.next_prime(2**bits)
+        
+    plt.xlabel('Primo')
+    plt.ylabel('Tiempo en segundos')
+    plt.plot(primos_pe,tiempos_pe)
+    plt.show()
