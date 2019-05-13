@@ -174,5 +174,4 @@ def congruencia(a,b,m):
            sol.append(x)
            x = x+n
        return sol
-    raise ArithmeticError("No solution in congruence function")
     return([0])

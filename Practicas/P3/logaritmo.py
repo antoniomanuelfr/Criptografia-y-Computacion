@@ -2,6 +2,10 @@
 import numpy as np
 import util.math as mt
 import util.primality as pr
+import matplotlib.pyplot as plt
+import random
+from time import time
+
 """
 Algortimos para la resolución del problema del logaritmo discreto
 """
@@ -160,36 +164,56 @@ def log_ro_pollard(a, b, p):
     return mt.congruencia(sec_2[2]-sec_1[2],sec_1[1]-sec_2[1],p-1)
 
 if __name__ == '__main__':
-    # a = 5
-    # b = 24
-    # p = 47
-    # print ("El log en base {} de {} mod {} usando fuerza bruta es: {}".format(a,b,p,log_bf(a,b,p)))
-    # print ("El log en base {} de {} mod {} usando el algoritmo paso pequeño-paso gigante es: {}".format(a,b,p,log_pe_pg(a,b,p)))
-    # print ("El log en base {} de {} mod {} usando el algoritmo rho de Pollard es: {}".format(a,b,p,log_ro_pollard(a,b,p)))
-    import matplotlib.pyplot as plt
-    import random
-    from time import time
-    n_iters = 17
-    primos_pe = []
-    tiempos_pe = []
+
+    # n_iters = 16
+    # primos_pe = []
+    # tiempos_pe = []
+    # bits = 5
+    # paso = 2
+    # p_n = pr.next_prime_strong(2**bits)
+
+    # for i in range (n_iters):
+    #     time_1 = time()
+    #     print ("Iteracion: {} usando un primo fuerte con {} bits".format(i,bits))
+
+    #     b = random.randint(2,p_n-2)
+    #     res = log_pe_pg((p_n-1)//2,b,p_n)
+    #     time_2 = time()        
+    #     primos_pe.append(p_n)
+    #     tiempos_pe.append(time_2-time_1)
+    #     bits+=paso
+    #     p_n = pr.next_prime_strong(2**bits)
+
+    # plt.xlabel('Primo')
+    # plt.ylabel('Tiempo en segundos')
+    # plt.title('Paso pequeño - Paso gigante')
+    # plt.plot(primos_pe,tiempos_pe)
+    # plt.show()
+
+    # Rho de Pollard
+    n_iters = 25
+    primos_ro = []
+    tiempos_ro = []
     bits = 5
     paso = 2
     p_n = pr.next_prime(2**bits)
 
     for i in range (n_iters):
+        print("Iteracion {} usando un primo con {} bits".format(i,bits))
         time_1 = time()
-        print (i)
-        b = random.randint(2,p_n-2)
-    
-        res = log_pe_pg((p_n-1)//2,b,p_n)
-        time_2 = time()        
-        primos_pe.append(p_n)
-        tiempos_pe.append(time_2-time_1)
-
+        a = random.randint(2,p_n-2)
+        res = log_ro_pollard(10,a,p_n)
+        time_2 = time()
+        if res !=[0]:
+            primos_ro.append(p_n)
+            tiempos_ro.append(time_2-time_1)
+        
         bits+=paso
+
         p_n = pr.next_prime(2**bits)
         
     plt.xlabel('Primo')
     plt.ylabel('Tiempo en segundos')
-    plt.plot(primos_pe,tiempos_pe)
+    plt.title('Rho de Pollard')
+    plt.plot(primos_ro,tiempos_ro)
     plt.show()
