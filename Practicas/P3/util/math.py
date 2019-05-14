@@ -144,6 +144,16 @@ def inversomodular(a,b):
        raise ArithmeticError("No solution in inverse function")
        return 0
 
+def mcd_ex (a,b):
+    (u0,u1)=(1,0)
+    (v0,v1)=(0,1)
+    while b > 0:
+        (c,r) = (a//b, a%b)
+        (u0,u1) = (u1,u0-c*u1)
+        (v0,v1) = (v1,v0-c*v1)
+        (a,b) = (b, a%b)
+    return [a,u0,v0]
+
 def congruencia(a,b,m):
     """
     Autor : Jesus García Miranda
@@ -164,6 +174,7 @@ def congruencia(a,b,m):
 
     u0 : Inverso del numero
     """
+<<<<<<< Updated upstream
     d = mcd(a,m)
     if b%d == 0:
        n = m//d
@@ -175,3 +186,19 @@ def congruencia(a,b,m):
            x = x+n
        return sol
     return([0])
+=======
+    d = mcd_ex(a,m)
+    if b%d[0] == 0:
+       n = m//d[0]
+       x = (d[1]*(b//d[0]))%n
+       return [n,x]
+    raise ArithmeticError("No solution in congruence function")
+    return([0,0])
+
+def sistema (l):
+    sol = [0,1]
+    for y in l:
+        z = congruencia(y[0]*sol[1],(y[1]-y[0]*sol[0])%y[2],y[2])
+        sol = [sol[0]+sol[1]*z[0],sol[1]*z[1]]
+    return(sol)
+>>>>>>> Stashed changes
