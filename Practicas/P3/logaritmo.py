@@ -164,56 +164,38 @@ def log_ro_pollard(a, b, p):
     return mt.congruencia(sec_2[2]-sec_1[2],sec_1[1]-sec_2[1],p-1)
 
 if __name__ == '__main__':
+    sel = int(input("Introduzca:\n1. para usar fuerza bruta.\n2. para paso enano - paso gigante.\n3. para Rho de Pollard\n"))
+    if sel == 1: 
+        n_iters = 12 # 12
+        title = "Fuerza Bruta"
+    elif sel == 2: 
+        n_iters = 16 # 16
+        title = "Paso enano - Paso gigante"
+    else: 
+        n_iters = 26 #26
+        title = "Rho de Pollard"
 
-    # n_iters = 16
-    # primos_pe = []
-    # tiempos_pe = []
-    # bits = 5
-    # paso = 2
-    # p_n = pr.next_prime_strong(2**bits)
-
-    # for i in range (n_iters):
-    #     time_1 = time()
-    #     print ("Iteracion: {} usando un primo fuerte con {} bits".format(i,bits))
-
-    #     b = random.randint(2,p_n-2)
-    #     res = log_pe_pg((p_n-1)//2,b,p_n)
-    #     time_2 = time()        
-    #     primos_pe.append(p_n)
-    #     tiempos_pe.append(time_2-time_1)
-    #     bits+=paso
-    #     p_n = pr.next_prime_strong(2**bits)
-
-    # plt.xlabel('Primo')
-    # plt.ylabel('Tiempo en segundos')
-    # plt.title('Paso pequeño - Paso gigante')
-    # plt.plot(primos_pe,tiempos_pe)
-    # plt.show()
-
-    # Rho de Pollard
-    n_iters = 25
-    primos_ro = []
-    tiempos_ro = []
+    primos = []
+    tiempos = []
     bits = 5
     paso = 2
-    p_n = pr.next_prime(2**bits)
-
+    p_n = pr.next_prime_strong(2**bits)
     for i in range (n_iters):
-        print("Iteracion {} usando un primo con {} bits".format(i,bits))
         time_1 = time()
         a = random.randint(2,p_n-2)
-        res = log_ro_pollard(10,a,p_n)
+        res = log_bf(10,a,p_n)
         time_2 = time()
-        if res !=[0]:
-            primos_ro.append(p_n)
-            tiempos_ro.append(time_2-time_1)
-        
-        bits+=paso
 
-        p_n = pr.next_prime(2**bits)
-        
+        primos.append(p_n)
+        tiempos.append(time_2-time_1)
+
+        bits+=paso
+        print("Iteracion {} usando un primo con {} bits en {} segundos".format(i,bits,time_2-time_1))
+
+        p_n = pr.next_prime_strong(2**bits)
+
     plt.xlabel('Primo')
     plt.ylabel('Tiempo en segundos')
-    plt.title('Rho de Pollard')
-    plt.plot(primos_ro,tiempos_ro)
+    plt.title(title)
+    plt.plot(primos,tiempos)
     plt.show()
