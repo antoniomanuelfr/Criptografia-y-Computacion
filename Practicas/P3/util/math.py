@@ -144,6 +144,16 @@ def inversomodular(a,b):
        raise ArithmeticError("No solution in inverse function")
        return 0
 
+def mcd_ex (a,b):
+    (u0,u1)=(1,0)
+    (v0,v1)=(0,1)
+    while b > 0:
+        (c,r) = (a//b, a%b)
+        (u0,u1) = (u1,u0-c*u1)
+        (v0,v1) = (v1,v0-c*v1)
+        (a,b) = (b, a%b)
+    return [a,u0,v0]
+
 def congruencia(a,b,m):
     """
     Autor : Jesus García Miranda
