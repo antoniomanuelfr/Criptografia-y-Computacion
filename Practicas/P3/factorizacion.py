@@ -31,13 +31,12 @@ def isSquare(num):
     return (sqnum*sqnum) == num
 
 def fermat (num):
-    x = ceil(square(num))
-    print("valor de x {}\tvalor de num {}".format(x, num))
+    x = square(num) + 1
 
     while not isSquare((x**2) - num):
         x += 1
     
-    return (x, square((x**2) - num ))
+    return ( x - square((x**2) - num ), x + square((x**2) - num ) )
 
 def calculateSecuencia (lista, func = lambda x,n: ((x**2) + 1) % n ):
 
@@ -67,60 +66,110 @@ def pollard (num ,seed = 0, function = lambda x, n: ((x**2) + 1) % n ):
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     import time
+    import random
 
-    def number_compuest_of_n_bits (n):
+    def near_comp_number (n):
         if n < 2:
             assert "Numero demasiado pequenio"
         
-        primer_primo = prim.next_prime(2**(n//2))
+        num = random.randrange(2**n, 2**(n+1))
+
+        primer_primo = prim.next_prime(num)
 
         return primer_primo * prim.next_prime(primer_primo)
     
+    def random_simple_number (inf, sup):
+        prime1, prime2 = prim.next_prime(random.randrange(inf,sup)), prim.next_prime(random.randrange(inf,sup))
+        return prime1 * prime2
+
     def makes_times (numeros, funcion):
         times = list()
         len_n = list()
         stop = False
-        stop_time = 12
+        stop_time = 20
         index = 0
 
         while not stop:
             start = time.time()
-            funcion(numeros[index])
+            n1,n2 = funcion(numeros[index])
             end = time.time()
 
             times.append(end-start)
-            len_n.append(len(bin(numeros[index])))
+            len_n.append(len(bin(numeros[index])) - 2)
+
+            print("Numero compuesto de {} bits, tiempo de factorizacion: {}".format( len(bin(numeros[index])) - 2 , ( end-start )))
+
+            if n1*n2 != numeros[index]:
+                print("Failed with {}, resultado: {}x{}".format(numeros[index], n1, n2))
+                stop = True
 
             index += 1
-
-            print("Iteraccion {} con valor de tiempo {}".format(index, ( end-start )))
 
             if index >= len(numeros) or stop_time < (end - start):
                 stop =  True
         
-        print("Terminado con una cantidad de {}, y una longitud de {}".format(index, len_n[index-1]))
+        print("Aniadidos {}, cantidad de bits del ultimo numero analizado {}".format(index, len_n[index-1]))
         
         return (times, len_n)
-
-    numeros = [number_compuest_of_n_bits(n) for n in range(8,45) ]
     
+    def make_time_mean(numeros, funcion):
+        times = list()
+        means = list()
+        stop = False
+        stop_time = 100
+        index = 0
+        aux = 0
 
-    plt.title("Graficas")
-    plt.subplot(3,1,1)
-    plt.title("Tentativa")
-    tiempos, tamanio = makes_times(numeros, tentative)
-    plt.plot(tiempos, tamanio, 'o-')
+        while not stop:
+            start = time.time()
+            n1,n2 = funcion(numeros[index])
+            end = time.time()
 
-    plt.subplot(3,1,2)
-    plt.title("Fermat")
-    tiempos, tamanio = makes_times(numeros, fermat)
-    plt.plot(tiempos, tamanio, 'r-')
+            aux += end-start
 
-    plt.subplot(3,2,1)
-    plt.title("Pollard")
-    tiempos, tamanio = makes_times(numeros, pollard)
-    plt.plot(tiempos, tamanio, 'b-')
+            times.append(end-start)
+            means.append(aux / len(times))
 
+            print("Media actual {}, tiempo de factorizacion: {}".format( aux / len(times) , ( end-start )))
+
+            if n1*n2 != numeros[index]:
+                print("Failed with {}, resultado: {}x{}".format(numeros[index], n1, n2))
+                stop = True
+
+            index += 1
+
+            if index >= len(numeros) or stop_time < (end - start):
+                stop =  True
+        
+        print("Aniadidos {}, media final {}".format(index, means[index-1]))
+        
+        return (times, means)
+    
+    def advantage_tentative (bits):
+        bits_square = square(bits) if bits < 14 else 7
+        sup = bits - bits_square
+
+        p = random.randrange(2**bits_square, 2**(bits_square+1))
+        n = random.randrange(2**sup,2**(sup+1))
+
+        return prim.next_prime( p ) * prim.next_prime( n )
+
+    numeros = [advantage_tentative(i) for i in range(4,45) ]    
+
+    plt.title("Tentativa vs Fermat vs Pollard")
+    tiempos, media = makes_times(numeros, tentative)
+    plt.plot(range(len(tiempos)), tiempos, 'b-', label="Tentativa")
+    #plt.plot(range(len(tiempos)), media, '-' ,alpha=0.7 , label="Media tentativa")
+
+    tiempos, media = makes_times(numeros, fermat)
+    plt.plot(range(len(tiempos)), tiempos, 'r-', label="Fermat")
+    #plt.plot(range(len(tiempos)), media, '-' ,alpha=0.7 , label="Media Fermat")
+
+    tiempos, media = makes_times(numeros, pollard)
+    plt.plot(range(len(tiempos)), tiempos, 'g-', label="Pollard")
+    #plt.plot(range(len(tiempos)), media, '-' ,alpha=0.7 , label="Media Pollard")
+
+    plt.legend()
     plt.show()
 
 
