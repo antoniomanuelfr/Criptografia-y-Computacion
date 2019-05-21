@@ -182,7 +182,12 @@ if __name__ == '__main__':
     p_n = pr.next_prime_strong(2**bits)
     for i in range (n_iters):
         time_1 = time()
-        a = random.randint(2,p_n-2)
+        
+        if sel != 2: 
+            a = random.randint(2,p_n-2)
+        else: 
+            a = (p_n-1)//2
+
         res = log_bf(10,a,p_n)
         time_2 = time()
 

@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import matplotlib.pyplot as plt
+import random
+import time
+
 from math import sqrt, ceil
 from random import randint
 
@@ -58,13 +62,15 @@ def escuadrado(n):
 " Funciones Utiles
 """
 
-def modoExponencial(s):
-    u = 1
-    while (s%2 == 0):
-        s = s//2
+# Descompone s -> 2**u * s
+def descomposicion(p):
+    u, s = 0, p
+    while (s % 2 == 0) and (s > 0):
+        s = s // 2
         u += 1
     return u, s
 
+# Calcula base**exponente % modulo
 def potenciaModular(base, exponente, modulo):
     aux = 1
     while (exponente > 0):
@@ -100,10 +106,47 @@ def testMillerRabin(p, n_testigos):
             a_1 = potenciaModular(a, s, p)
             result = MRvalidate(a_1, p, b)
             if (result == 0):
-                return False
-        return True
+                return 0
+        return 1
     else:
-        return False
+        return 0
+
+def nextPrimo(m, n_testigos, fuerte = False):
+    candidato = m
+    if(candidato%2 == 0):
+        candidato += 1
+    else:
+        candidato += 2
+    if(fuerte == False):
+        while ((testMillerRabin(candidato, n_testigos)) == 0):
+            candidato += 2
+        return candidato
+    else:
+        while True:
+            if ((testMillerRabin(candidato, n_testigos)) == 1):
+                if ((testMillerRabin((candidato-1)//2, n_testigos)) == 1):
+                    break
+            candidato += 2
+        return candidato
+
+def nextPrimoBits(m, n_testigos, writeInit = False, aleatorio = True):
+    lowValor = 2**(m-1)+3
+    highValor = 2**m
+    if(aleatorio):
+        candidato = randint(lowValor, highValor)
+    else:
+        candidato = lowValor
+    while candidato < highValor:
+        if ((testMillerRabin(candidato, n_testigos)) == 1):
+            if(((testMillerRabin((candidato-1)//2, n_testigos)) == 1)):
+                break
+        candidato += 4
+    if(writeInit == True):
+        return candidato
+    if(candidato >= highValor):
+        print("No existe primo fuerte con los bits dados")
+    else:
+        return candidato
 
 # Funcion Saber si es cuadrado perfecto
 def cuadradoPerfecto(n):
@@ -136,7 +179,9 @@ def factorizar(a, p):
 """
 
 def simbolo_legendre(a, p):
-    assert(p%2 != 0 and testMillerRabin(p, 10))
+    assert(p%2 != 0)
+    assert(testMillerRabin(p, 10) == 1)
+    assert(mcd(a, p) == 1)
     if (mcd(a, p) == 1):
         if (a == 1):
             return 1
@@ -158,57 +203,95 @@ def simbolo_legendre(a, p):
     else:
         return 0
 
-def simbolo_jacobi(m, n):
-    if (m == 0):
-        if (n == 1):
-            return 1
-        else:
-            return 0
-    elif (m == 2):
-        aux = n%8
+def simbolo_jacobi(a, p):
+    assert(p%2 != 0)
+    if (p == 1):
+        return 1
+    if (a%2 == 0):
+        aux = p%8
         if (aux == 7) or (aux == 1):
-            return 1
+            return simbolo_jacobi(a//2, p)
         if (aux == 5) or (aux == 3):
-            return -1
-    elif (m >= n):
-        return simbolo_jacobi(m%n, n)
-    elif (m%2 == 0):
-        return simbolo_jacobi(2, n) * simbolo_jacobi(m/2, n)
+            return -simbolo_jacobi(a//2, p)
+    if (a%4 == 3) and (p%4 == 3):
+        return -simbolo_jacobi(p%a, a)
     else:
-        if (m%4 == 3) and (n%4 == 3):
-            return -simbolo_jacobi(n, m)
-        else:
-            return simbolo_jacobi(n, m)
+        return simbolo_jacobi(p%a, a)
         
-def algoritmo_tonelli(p, a):
-    assert(p%2 != 0 and testMillerRabin(p, 10) and simbolo_jacobi(a, p) == 1)
+def algoritmo_tonelli(a, p):
+    assert(p%2 != 0)
+    assert(testMillerRabin(p, 10) == 1)
+    assert(simbolo_jacobi(a, p) == 1)
     n = 2
-    while (simbolo_jacobi(n, p) == -1):
+    while (simbolo_jacobi(n, p) != -1):
         n += 1
-    u, s = modoExponencial(p-1)
-    r = potenciaModular(a, (s+1)/2, p)
+    u, s = descomposicion(p-1)
     if (u == 1):
-        return r
-    b = potenciaModular(n, 8, p)
+        return potenciaModular(a, (p+1)//4, p)
+    r = potenciaModular(a, (s+1)//2, p)
+    b = potenciaModular(n, s, p)
     c = potenciaModular(a, p-2, p)
-    d = potenciaModular(c, 1, p) * potenciaModular(r, 2, p)
-    for j in range(0, u-2):
+    d = (c * r * r) % p
+    for j in range(0, u-1):
         aux = potenciaModular(d, 2**(u-2-j), p)
-        #aux = potenciaModular(d, potenciaModular(2, u-2-j, 0), p)
         if (aux == p-1):
-            r = potenciaModular(r, 1, p) * potenciaModular(b, 1, p)
-            d = potenciaModular(d, 1, p) * potenciaModular(b, 2, p)
-        b = potenciaModular(b, 2, p)
+            r = (r * b) % p
+            d = (d * b * b) % p
+        b = (b * b) % p
     return r
-            
 
-def main():
-    # Pruebas Legendre
+"""
+" Funciones de Prueba
+"""
+
+def prueba_legendre():
     print("Legendre -> (", 245, "/", 911, ") = ", simbolo_legendre(245, 911))
     print("Legendre -> (", 782, "/", 911, ") = ", simbolo_legendre(782, 911))
-    # Pruebas Jacobi
+
+def prueba_jacobi():
     print("Jacobi -> (", 245, "/", 911, ") = ", simbolo_jacobi(245, 911))
     print("Jacobi -> (", 782, "/", 911, ") = ", simbolo_jacobi(782, 911))
+            
+def prueba_tonelli(seed = 20000913, showPrints = False, showResult = False, showGraphic = True):
+    random.seed(seed)
+    flag = 10
+    vectorResult = []
+    vectorP = []
+    vectorTime = []
+    for i in range(0, 100):
+        p = nextPrimo(flag, 100)
+        a = randint(2, p-1)
+        while(simbolo_jacobi(a, p) != 1):
+            a = randint(2, p-1)
+        vectorP.append(len(str(p)))
+        tIni = time.time()
+        r = algoritmo_tonelli(a, p)
+        tFin = time.time()
+        finalTime = (tFin-tIni)*1000
+        vectorTime.append(finalTime)
+        result = ((r * r % p) == a)
+        if (showPrints):
+            print("Valor de a:", a)
+            print("Valor de p:", p)
+            print("Valor de r:", r)
+            print("Es el Resultado Correcto?", result)
+            print("Tiempo de Ejecucion:", finalTime, "\n")
+        vectorResult.append(result)
+        flag = flag * 1000
+    if (showResult):
+        print(vectorResult)
+    if (showGraphic):
+        plt.plot(vectorTime, vectorP)
+        #plt.scatter(vectorTime, vectorP)
+        plt.xlabel('Tiempo (Milisegundos)')
+        plt.ylabel('Numero Primo')
+        plt.title('Algoritmo de Tonelli')
+        plt.show()
+
+def main():
+    #prueba_legendre()
+    #prueba_jacobi()
+    prueba_tonelli()
     
 if __name__ == "__main__":
 	main()
