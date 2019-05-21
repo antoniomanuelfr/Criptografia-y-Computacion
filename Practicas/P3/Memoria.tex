@@ -65,7 +65,7 @@
 	 	\begin{itemize}
 	 		\item\textbf{Fuerza bruta}.
 	 		\item\textbf{Paso enano - paso gigante}.
-	 		\item\textbf{Rho de Pollard}.
+	 		\item\textbf{\boldmath $\rho$ de Pollard}.
 	 	\end{itemize}
 		En cuanto a la ejecución de los algoritmos, se han establecido un número de iteraciones para cada uno de los algoritmos y en cada una se incrementa en dos bits el primo en el que se está trabajando. El primer primo de cada iteración tiene 5 bits.
 		\pagebreak
@@ -97,4 +97,40 @@
 	\subsection{Conclusiones}
 	Observando las gráficas anteriores, vemos como los distintos algoritmos que hemos usado llega un momento en el que tiempo empleado en resolver el problema se dispara.\\
 	Si comparamos los tres algoritmos vemos como el de fuerza bruta ha sido el que peor se ha comportado, seguido del algoritmo de paso enano - paso gigante y el algoritmo que mejor se ha comportado ha sido el de Rho de Pollard.\\
-	\end{document}
+	
+	\section{Factorizacion}
+	\subsection{Explicacion}
+	El objetivo en esta sección es el de resolver el problema de la factorizacion y ver como se comportan distintos algoritmos cuando el problema crece.
+	 	Se han usado los siguientes algoritmos: 
+	 	\begin{itemize}
+	 		\item\textbf{Tentativa}.
+	 		\item\textbf{Fermat}.
+	 		\item\textbf{\boldmath $\rho$ de Pollard}.
+	 	\end{itemize}
+		En cuanto a la ejecución de los algoritmos, se han establecido un limite de tiempo, y probado con diferentes formas de generar los numeros compuestos para comprobar como evolucionan os tiempos según como lo generemos.
+	
+	\subsection{Graficas}
+	\begin{figure}[!htbp]
+			
+			\begin{subfigure}{.5\textwidth}
+				\centering
+				\includegraphics[width=.8\linewidth]{EvolucionMedias}
+				\caption{Compuestos aleatorios}
+				\label{fig:sfig21}
+			\end{subfigure}%
+			\begin{subfigure}{.5\textwidth}
+				\centering
+				\includegraphics[width=.8\linewidth]{NearComp}
+				\caption{Compuestos de primos cercanos}
+				\label{fig:sfig22}
+			\end{subfigure}
+			\begin{subfigure}{.5\textwidth}
+				\centering
+				\includegraphics[width=.8\linewidth]{VentajaTentativa}
+				\caption{Compuestos con un primo pequeño}
+				\label{fig:sfig23}
+			\end{subfigure}
+		\caption{Graficas factorizacion.}
+		\label{fig:fig2}
+		\end{figure}
+\end{document}
