@@ -164,7 +164,7 @@ def log_ro_pollard(a, b, p):
     return mt.congruencia(sec_2[2]-sec_1[2],sec_1[1]-sec_2[1],p-1)
 
 if __name__ == '__main__':
-    sel = int(input("Introduzca:\n1. para usar fuerza bruta.\n2. para paso enano - paso gigante.\n3. para Rho de Pollard\n"))
+    sel = int(input("Introduzca:\n1. Para usar fuerza bruta.\n2. Para paso enano - paso gigante.\n3. Para Rho de Pollard\n"))
     if sel == 1: 
         n_iters = 12 # 12
         title = "Fuerza Bruta"
@@ -182,13 +182,16 @@ if __name__ == '__main__':
     p_n = pr.next_prime_strong(2**bits)
     for i in range (n_iters):
         time_1 = time()
-        
-        if sel != 2: 
-            a = random.randint(2,p_n-2)
-        else: 
-            a = (p_n-1)//2
+        a = random.randint(2,p_n-2)
 
-        res = log_bf(10,a,p_n)
+        if sel == 1: 
+            res = log_bf((p_n-1)//2,a,p_n)
+
+        elif sel == 2 : 
+            res = log_pe_pg((p_n-1)//2,a,p_n)
+        else:
+            res = log_ro_pollard((p_n-1)//2,a,p_n)
+
         time_2 = time()
 
         primos.append(p_n)
